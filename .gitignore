@@ -1,0 +1,13 @@
+# Ignore all dotfiles...
+.*
+# except for .gitignore
+!.gitignore
+
+target/
+project/project
+project/target
+project/play-fork-run.sbt
+project/sbt-ui.sbt
+project/metals.sbt
+tmp
+/src/test/resources/**/*tmp*
