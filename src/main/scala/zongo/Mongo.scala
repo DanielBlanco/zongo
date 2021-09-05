@@ -45,7 +45,7 @@ object Mongo {
     /** Executes command in the context of the current database.
       *
       * @param command        the command to be run
-      * @param readPreference the [[ReadPreference]] to be used when executing
+      * @param readPreference the ReadPreference to be used when executing
       *                       the command
       * @param db             the database to use.
       * @return a ZIO Stream containing the command result.
