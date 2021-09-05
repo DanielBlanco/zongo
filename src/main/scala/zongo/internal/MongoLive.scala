@@ -5,6 +5,7 @@ import org.mongodb.scala.{Document => _, _}
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
 import org.mongodb.scala.bson._
 import org.mongodb.scala.model.{IndexModel, Sorts}
+import org.mongodb.scala.result._
 import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 import zio._
@@ -82,6 +83,59 @@ final case class MongoLive(
       .map(_.head)
       .refineToOrDie[MongoException]
 
+  /** @see Mongo.Service.createIndex */
+  def createIndex[A](c: MongoCollection[A], i: conversions.Bson): Task[String] =
+    c.createIndex(i)
+      .toStream()
+      .runCollect
+      .map(_.head)
+      .refineToOrDie[MongoException]
+
+  /** @see Mongo.Service.createIndexes */
+  def createIndexes[A](
+      c: MongoCollection[A],
+      l: Seq[IndexModel]
+  ): Stream[MongoException, String] =
+    c.createIndexes(l).toStream().refineToOrDie[MongoException]
+
+  /** @see Mongo.Service.listIndexes */
+  def listIndexes[A](c: MongoCollection[A]): Stream[MongoException, Document] =
+    c.listIndexes().toStream().refineToOrDie[MongoException]
+
+  def find[A](
+      c: MongoCollection[A],
+      query: conversions.Bson,
+      sorts: Option[conversions.Bson] = None,
+      limit: Option[Int] = None,
+      skip: Option[Int] = None,
+      projection: Option[conversions.Bson] = None
+  ): Stream[MongoException, Document] = {
+    val q0 = c.find[Document](query)
+    val q1 = projection.fold(q0)(p => q0.projection(p))
+    val q2 = sorts.fold(q1)(s => q1.sort(Sorts.orderBy(s)))
+    val q3 = limit.fold(q2)(l => q2.limit(l))
+    val q4 = skip.fold(q3)(s => q2.skip(s))
+    q4.toStream().refineToOrDie[MongoException]
+  }
+
+  /** @see Mongo.Service.distinct */
+  def distinct[A](
+      c: MongoCollection[A],
+      field: String,
+      query: conversions.Bson
+  ): Stream[MongoException, BsonValue] =
+    c.distinct[BsonValue](field, query)
+      .toStream()
+      .refineToOrDie[MongoException]
+
+  /** @see Mongo.Service.insert */
+  def insert[A](c: MongoCollection[A], doc: A): Task[InsertOneResult] =
+    c.insertOne(doc).toStream().runCollect.map(_.head)
+
+  /** @see Mongo.Service.insertMany */
+  def insertMany[A](c: MongoCollection[A], docs: Seq[A]): Task[InsertManyResult] =
+    c.insertMany(docs).toStream().runCollect.map(_.head)
+
   /** @see Mongo.Service.remove */
   def remove[A](
       c: MongoCollection[A],
@@ -92,6 +146,18 @@ final case class MongoLive(
         c.deleteMany(query).toFuture()
       }
       .map(_ => ())
+      .refineToOrDie[MongoException]
+
+  /** @see Mongo.Service.update */
+  def update[A](
+      c: MongoCollection[A],
+      query: conversions.Bson,
+      update: conversions.Bson
+  ): Task[UpdateResult] =
+    c.updateMany(query, update)
+      .toStream()
+      .runCollect
+      .map(_.head)
       .refineToOrDie[MongoException]
 }
 object MongoLive {

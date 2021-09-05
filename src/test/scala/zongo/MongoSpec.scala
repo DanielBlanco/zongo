@@ -16,10 +16,8 @@ object MongoSpec extends BaseSpec {
 
   def tests =
     CountTests.tests ++
-      // HealthCheckTests.tests ++
-      //   IndexesTests.tests ++
-      // FindTests.tests ++
-      // UpdateTests.tests ++
-      // QueryHelpersTests.tests ++
+      IndexesTests.tests ++
+      FindTests.tests ++
+      UpdateTests.tests ++
       OtherTests.tests
 }

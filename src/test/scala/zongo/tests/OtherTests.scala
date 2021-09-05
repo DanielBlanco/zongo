@@ -32,7 +32,20 @@ object OtherTests {
         _    <- Mongo.runCommand[Document](createCmd("coll_2"))(db).runDrain
         rslt <- Mongo.findCollectionNames(db).runCollect
       } yield assert(rslt)(hasSubset(Seq("coll_1", "coll_2")))
-    } @@ timeout(5.seconds)
+    } @@ timeout(5.seconds),
+    test("toBsonDocument") {
+      val query    = Filters.and(Filters.eq("a", 1), Filters.eq("b", 2))
+      val result   = Mongo.toBsonDocument(query)
+      val expected =
+        Document("$and" -> BsonArray(Document("a" -> 1), Document("b" -> 2)))
+      assert(expected.toBsonDocument)(equalTo(result))
+    },
+    test("toBsonDocument converts to the same string") {
+      val query    = Filters.or(Filters.eq("a", 1), Filters.eq("b", 2))
+      val result   = Mongo.toBsonDocument(query)
+      val expected = """{"$or": [{"a": 1}, {"b": 2}]}"""
+      assert(expected)(equalTo(result.toString))
+    }
   )
 
   private def createCmd(name: String) = Document("create" -> name)
