@@ -53,7 +53,13 @@ final case class MongoLive(
 
   /** @see Mongo.Service.healthcheck */
   def healthcheck(db: MongoDatabase): IO[MongoException, Unit] =
-    findCollectionNames(db).runCollect.map(_ => ())
+    ping(db)
+
+  /** @see Mongo.Service.ping */
+  def ping(db: MongoDatabase): IO[MongoException, Unit] =
+    runCommand[Document](
+      Document("ping" -> "ping")
+    )(db).runCollect.map(_ => ())
 
   /** @see Mongo.Service.findCollectionNames */
   def findCollectionNames(db: MongoDatabase): Stream[MongoException, String] =

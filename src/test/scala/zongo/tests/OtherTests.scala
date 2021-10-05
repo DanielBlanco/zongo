@@ -21,6 +21,12 @@ object OtherTests {
         rslt <- Mongo.healthcheck(db).either
       } yield assert(rslt)(isRight)
     } @@ timeout(1.seconds),
+    testM("ping") {
+      for {
+        db   <- Mongo.database(DB)
+        rslt <- Mongo.ping(db).either
+      } yield assert(rslt)(isRight)
+    } @@ timeout(1.seconds),
     testM("findCollectionNames") {
       for {
         db   <- Mongo.database(DB)

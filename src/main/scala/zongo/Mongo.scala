@@ -55,12 +55,19 @@ object Mongo {
         readPreference: ReadPreference
     )(db: MongoDatabase)(implicit ct: ClassTag[A]): Stream[MongoException, A]
 
-    /** Runs a query and if no error is returned all is good.
+    /** Same as ping.
       *
       * @param db   the database to use.
       * @return nothing useful.
       */
     def healthcheck(db: MongoDatabase): IO[MongoException, Unit]
+
+    /** Runs a query and if no error is returned all is good.
+      *
+      * @param db   the database to use.
+      * @return nothing useful.
+      */
+    def ping(db: MongoDatabase): IO[MongoException, Unit]
 
     /** Gets the Mongo collection to use.
       *
