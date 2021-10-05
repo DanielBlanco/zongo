@@ -2,6 +2,7 @@
 .*
 # except for .gitignore
 !.gitignore
+!.github
 
 target/
 project/project
