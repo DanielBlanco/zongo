@@ -57,7 +57,7 @@ object FindTests {
         docs <- Mongo.distinct(c, "num", q).runCollect
         _    <- Mongo.clearCollection(c)
         nums  = docs.map(_.asNumber.intValue)
-      } yield assert(nums)(equalTo(Chunk(1, 2, 3)))
+      } yield assert(nums)(equalTo(Chunk(1, 2, 3, 4)))
     }
   )
 

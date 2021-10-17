@@ -44,7 +44,9 @@ trait BaseSpec extends DefaultRunnableSpec {
 
   // ---- ZIO Layer setup
 
-  type SpecEnv = Has[SpecConfig] with Mongo
+  final val TEST_DB = "zongo_test"
+
+  type SpecEnv = Has[SpecConfig] with Mongo with ItemsRepo
 
   lazy val mongoLayer: RLayer[Has[SpecConfig], Mongo] =
     for {
@@ -56,12 +58,12 @@ trait BaseSpec extends DefaultRunnableSpec {
     ZLayer
       .fromSomeMagic[TestEnvironment, SpecEnv](
         Config.layer,
-        mongoLayer
+        mongoLayer,
+        ItemsRepo.layer(TEST_DB)
       )
       .orDie
 
   // ---- Helper functions
 
   // protected def clearDB = Mongo.clearDatabase.orDie
-
 }

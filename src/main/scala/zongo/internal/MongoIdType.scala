@@ -9,17 +9,7 @@ trait MongoIdType {
 
   /** Mongo ID wrapper. */
   object MongoId extends Subtype[ObjectId] {
-    // implicit lazy val objectIdJsonFormat = MongoObjectIdJsonFormat
 
-    // implicit val jsonDecoder: Reads[MongoId] =
-    //   JsPath.read[ObjectId].map(apply(_))
-
-    // implicit val jsonEncoder: Writes[MongoId] =
-    //   Writes { a: MongoId => MongoObjectIdJsonFormat.writes(unwrap(a)) }
-
-    /** This way models can just do <Model>.newId and encapsulate the Id
-      *  generation code that is specific to Mongo.
-      */
     def make: MongoId = wrap(newId)
 
     def make[ID](id: ID): Either[String, MongoId] =
@@ -28,6 +18,9 @@ trait MongoIdType {
     def zmake[ID](id: ID): IO[String, MongoId] =
       znewId(id).map(wrap)
 
+    /** This way models can just do <Model>.newId and encapsulate the Id
+      *  generation code that is specific to Mongo.
+      */
     private def newId = new ObjectId()
 
     /** Parses an Id or fails with an Exception. */

@@ -23,9 +23,13 @@ final case class MongoLive(
   override def close: Unit =
     client.close()
 
+  /** @see Mongo.Service._database */
+  def _database(name: String): MongoDatabase =
+    client.getDatabase(name)
+
   /** @see Mongo.Service.database */
-  def database(name: String): Task[MongoDatabase] =
-    ZIO.effect(client.getDatabase(name))
+  def database(name: String): UIO[MongoDatabase] =
+    ZIO.effect(_database(name)).orDie
 
   /** @see Mongo.Service.clearDatabase */
   def clearDatabase(db: MongoDatabase): Task[Unit] =
@@ -71,11 +75,17 @@ final case class MongoLive(
   def clearCollection[A](c: MongoCollection[A]): Task[Unit] =
     remove(c, Document())
 
+  /** @see Mongo.Service._collection */
+  def _collection[A](name: String)(db: MongoDatabase)(implicit
+      ct: ClassTag[A]
+  ): MongoCollection[A] =
+    db.getCollection[A](name)
+
   /** @see Mongo.Service.collection */
   def collection[A](name: String)(db: MongoDatabase)(implicit
       ct: ClassTag[A]
   ): UIO[MongoCollection[A]] =
-    ZIO.succeed(db.getCollection[A](name))
+    ZIO.succeed(_collection[A](name)(db))
 
   /** @see Mongo.Service.count */
   def count[A](c: MongoCollection[A]): Task[Long] =
@@ -115,8 +125,8 @@ final case class MongoLive(
       limit: Option[Int] = None,
       skip: Option[Int] = None,
       projection: Option[conversions.Bson] = None
-  ): Stream[MongoException, Document] = {
-    val q0 = c.find[Document](query)
+  )(implicit ct: ClassTag[A]): Stream[MongoException, A] = {
+    val q0 = c.find[A](query)
     val q1 = projection.fold(q0)(p => q0.projection(p))
     val q2 = sorts.fold(q1)(s => q1.sort(Sorts.orderBy(s)))
     val q3 = limit.fold(q2)(l => q2.limit(l))

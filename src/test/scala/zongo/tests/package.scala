@@ -34,6 +34,7 @@ package object tests {
     Seq(
       Document("_id" -> MongoId.make, "num" -> 1, "g" -> 1),
       Document("_id" -> MongoId.make, "num" -> 2, "g" -> 1),
-      Document("_id" -> MongoId.make, "num" -> 3, "g" -> 1)
+      Document("_id" -> MongoId.make, "num" -> 3, "g" -> 1),
+      Document("_id" -> MongoId.make, "num" -> 4, "g" -> 1, "opt" -> None)
     )
 }

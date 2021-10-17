@@ -9,6 +9,7 @@ lazy val root = (project in file("."))
   .settings(
     name                 := "zongo",
     scalacOptions       ++= Seq(
+      "-feature",
       "-encoding",
       "UTF-8",
       "-deprecation",
@@ -16,7 +17,9 @@ lazy val root = (project in file("."))
       "-Ymacro-annotations"
     ),
     libraryDependencies ++= (
-      CompilerPlugins.libs ++ MongoDB.libs ++ Testing.libs ++ ZIO.libs
+      CompilerPlugins.libs ++
+        Circe.libs ++
+        MongoDB.libs ++ Testing.libs ++ ZIO.libs
     ),
     testFrameworks       := Seq(Testing.framework),
     Test / fork          := true

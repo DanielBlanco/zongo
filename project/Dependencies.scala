@@ -4,6 +4,7 @@ object Dependencies {
   object V {
     val betterMonadicFor = "0.3.1"
     val mongo            = "4.2.3"
+    val circe            = "0.14.1"
     val zio              = "1.0.10"
     val zioCats          = "2.4.0.0"
     val zioConfig        = "1.0.4"
@@ -16,6 +17,15 @@ object Dependencies {
   object CompilerPlugins {
     val libs = Seq(
       compilerPlugin("com.olegpy" %% "better-monadic-for" % V.betterMonadicFor)
+    )
+  }
+
+  /** Used in RepoTests */
+  object Circe {
+    val libs = Seq(
+      "io.circe" %% "circe-core"    % V.circe,
+      "io.circe" %% "circe-generic" % V.circe,
+      "io.circe" %% "circe-parser"  % V.circe
     )
   }
 

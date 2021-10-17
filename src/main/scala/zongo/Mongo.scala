@@ -24,7 +24,14 @@ object Mongo {
       * @param name the name of the database
       * @return the database
       */
-    def database(name: String): Task[MongoDatabase]
+    def _database(name: String): MongoDatabase
+
+    /** Gets the database with the given name.
+      *
+      * @param name the name of the database
+      * @return the database wrapped in a ZIO.
+      */
+    def database(name: String): UIO[MongoDatabase]
 
     /** Clears the data from all Mongo collections. */
     def clearDatabase(db: MongoDatabase): Task[Unit]
@@ -74,6 +81,16 @@ object Mongo {
       * @param name the name of the mongo collection to fetch.
       * @param db   the database to use.
       * @return a MongoCollection instance.
+      */
+    def _collection[A](name: String)(db: MongoDatabase)(implicit
+        ct: ClassTag[A]
+    ): MongoCollection[A]
+
+    /** Gets the Mongo collection to use.
+      *
+      * @param name the name of the mongo collection to fetch.
+      * @param db   the database to use.
+      * @return a MongoCollection wrapped in a ZIO.
       */
     def collection[A](name: String)(db: MongoDatabase)(implicit
         ct: ClassTag[A]
@@ -145,7 +162,7 @@ object Mongo {
         limit: Option[Int] = None,
         skip: Option[Int] = None,
         projection: Option[conversions.Bson] = None
-    ): Stream[MongoException, Document]
+    )(implicit ct: ClassTag[A]): Stream[MongoException, A]
 
     /** Find documents using distinct. */
     def distinct[A](
@@ -173,6 +190,12 @@ object Mongo {
       */
     def insertMany[A](c: MongoCollection[A], docs: Seq[A]): Task[InsertManyResult]
 
+    /** Deletes the documents that match the provided query.
+      *
+      * @param c the mongo collection.
+      * @param query to filter by.
+      * @return nothing useful.
+      */
     def remove[A](
         c: MongoCollection[A],
         query: conversions.Bson
