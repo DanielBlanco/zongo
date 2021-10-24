@@ -36,15 +36,15 @@ object MongoSpec extends BaseSpec {
     testM("findCollectionNames") {
       for {
         db   <- Mongo.getDatabase(TEST_DB)
-        old  <- Mongo.findCollectionNames(db)
-        _    <- Mongo.removeCollections(old)(db)
-        _    <- Mongo.createCollections(collections)(db)
+        old  <- Mongo.getCollections(collNames)(db)
+        _    <- Mongo.dropCollections(old)
+        _    <- Mongo.createCollections(collNames)(db)
         rslt <- Mongo.findCollectionNames(db)
-      } yield assert(rslt)(hasSubset(collections))
+      } yield assert(rslt)(hasSubset(collNames))
     } @@ timeout(TIMEOUT)
   )
 
-  final val collections = Chunk("coll_1", "coll_2")
+  final val collNames = Chunk("coll_1", "coll_2")
 
   private def createCmd(name: String) = Document("create" -> name)
 

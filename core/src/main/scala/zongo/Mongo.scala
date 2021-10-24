@@ -1,16 +1,10 @@
 package zongo
 
 import com.mongodb.ReadPreference
+import com.mongodb.client.result.DeleteResult
 import org.bson.conversions.Bson
 import mongo4cats.bson._
 import mongo4cats.codecs.CodecRegistry
-// import mongo4cats.client._
-// import mongo4cats.database._
-// import org.mongodb.scala._
-// import org.mongodb.scala.bson._
-// import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
-// import org.mongodb.scala.model.{Filters, IndexModel, Sorts}
-// import org.mongodb.scala.result._
 import scala.util.{Failure, Success, Try}
 import scala.reflect.ClassTag
 import zio._
@@ -32,8 +26,20 @@ object Mongo {
       */
     def getDatabase(name: String): Task[MongoDatabase]
 
+    /** Drops the database.
+      *
+      * @param db the database to drop.
+      * @return unit.
+      */
+    def dropDatabase(db: MongoDatabase): Task[Unit]
+
     /** Clears the data from all Mongo collections. */
-    // def clearDatabase(db: MongoDatabase): Task[Unit]
+    def clearDatabase(db: MongoDatabase): Task[Unit] =
+      for {
+        names <- findCollectionNames(db)
+        colls <- getCollections(names)(db)
+        _     <- clearCollections(colls)
+      } yield ()
 
     /** Find the available collections. */
     def findCollectionNames(db: MongoDatabase): Task[Chunk[String]]
@@ -97,6 +103,25 @@ object Mongo {
     ): Task[Unit]                             =
       ZIO.foreachPar(names)(createCollection(_)(db)).map(_ => ())
 
+    /** Removes ALL records from a mongo collection.
+      *
+      * @param name the names of the mongo collections to create.
+      * @param db   the database to use.
+      * @return unit.
+      */
+    def clearCollection[A](c: MongoCollection[A]): Task[DeleteResult]
+
+    /** Removes ALL records from chunk of mongo collection.
+      *
+      * @param name the names of the mongo collections to create.
+      * @param db   the database to use.
+      * @return unit.
+      */
+    def clearCollections[A](
+        cs: Chunk[MongoCollection[A]]
+    ): Task[Chunk[DeleteResult]] =
+      ZIO.foreachPar(cs)(clearCollection)
+
     /** Gets the Mongo collection to use.
       *
       * @param name the name of the mongo collection to fetch.
@@ -118,31 +143,33 @@ object Mongo {
         codecRegistry: CodecRegistry
     )(db: MongoDatabase): Task[MongoCollection[A]]
 
-    /** Removes a mongo collection from database.
+    /** Gets the Mongo collections.
       *
-      * @param name the name of the mongo collection to remove.
+      * @param name the chunk of names to fetch.
       * @param db   the database to use.
-      * @return unit.
+      * @return a MongoCollection instance.
       */
-    def removeCollection(name: String)(
-        db: MongoDatabase
-    ): Task[Unit] =
-      runCommand(Document("drop" -> name))(db).map(_ => ())
+    def getCollections(
+        names: Chunk[String]
+    )(db: MongoDatabase): Task[Chunk[MongoCollection[Document]]] =
+      ZIO.foreachPar(names)(getCollection(_)(db))
 
-    /** Removes a chunk of mongo collections from database.
+    /** Drops a mongo collection from database.
       *
-      * @param names the names of the mongo collections to remove.
-      * @param db   the database to use.
+      * @param c  the mongo collection to drop.
+      * @param db the database to use.
       * @return unit.
       */
-    def removeCollections(names: Chunk[String])(
-        db: MongoDatabase
-    ): Task[Unit] =
-      ZIO
-        .foreachPar(names) { name =>
-          removeCollection(name)(db)
-        }
-        .map(_ => ())
+    def dropCollection[A](c: MongoCollection[A]): Task[Unit]
+
+    /** Drops a chunk of mongo collections from database.
+      *
+      * @param cs the chunk of collections to drop.
+      * @param db the database to use.
+      * @return unit.
+      */
+    def dropCollections[A](cs: Chunk[MongoCollection[A]]): Task[Unit] =
+      ZIO.foreachPar(cs)(dropCollection(_)).map(_ => ())
 
   }
 
