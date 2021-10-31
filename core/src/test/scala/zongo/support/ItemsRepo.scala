@@ -1,92 +1,67 @@
-// package zongo.support
+package zongo.support
 
-// import io.circe._
-// import io.circe.generic.semiauto._
-// import io.circe.parser._
-// import io.circe.syntax._
-// import org.mongodb.scala.{Document => _, _}
-// import org.mongodb.scala.bson._
-// import org.mongodb.scala.result._
-// import scala.reflect.ClassTag
-// import scala.util.Try
-// import zio._
-// import zio.macros._
-// import zio.stream._
-// import zongo._
-// import zongo.internal.MongoRepoLive
-// import org.bson.codecs.configuration.CodecProvider
+import com.mongodb.client.result._
+import java.time.{Instant, LocalDate}
+import mongo4cats.collection.operations._
+import zio._
+import zio.json._
+import zio.macros._
+import zio.stream._
+import zongo._
+import zongo.json._
+import zongo.internal.MongoRepoLive
 
-// case class Item(
-//     _id: Option[MongoId],
-//     name: String
-// ) extends MongoDoc
-// object Item {
-//   implicit val jsonDecoder: Decoder[Item] = deriveDecoder[Item]
-//   implicit val jsonEncoder: Encoder[Item] = deriveEncoder[Item]
-// }
+case class Item(
+    _id: Option[MongoId],
+    name: String,
+    createdAt: Instant = Instant.now(),
+    updatedAt: LocalDate = LocalDate.now()
+) extends MongoDoc
+object Item {
+  implicit val jsonDecoder: JsonDecoder[Item] = DeriveJsonDecoder.gen[Item]
+  implicit val jsonEncoder: JsonEncoder[Item] = DeriveJsonEncoder.gen[Item]
+}
 
-// @accessible
-// object ItemsRepo {
-//   trait Service extends MongoRepo.Service[Item] {
-//     implicit val ct: ClassTag[Item] = ClassTag(classOf[Item])
+@accessible
+object ItemsRepo {
+  trait Service extends MongoRepo.Service[Item] {
 
-//     override val collectionName = "items"
+    override val collectionName = "items"
 
-//     /** definition to get @accessible functions */
-//     def count: Task[Long]
+    /** definition to get @accessible functions */
+    def clearCollection: Task[DeleteResult]
 
-//     /** definition to get @accessible functions */
-//     def count(query: conversions.Bson): Task[Long]
+    /** definition to get @accessible functions */
+    def count: Task[Long]
 
-//     /** definition to get @accessible functions */
-//     def find(
-//         query: conversions.Bson,
-//         sorts: Option[conversions.Bson] = None,
-//         limit: Option[Int] = None,
-//         skip: Option[Int] = None,
-//         projection: Option[conversions.Bson] = None
-//     ): Stream[MongoException, Item]
+    /** definition to get @accessible functions */
+    def count(filter: Filter): Task[Long]
 
-//     /** definition to get @accessible functions */
-//     def insertMany(docs: Seq[Item]): Task[InsertManyResult]
+    /** definition to get @accessible functions */
+    def find: Task[FindQueryBuilder[Item]]
 
-//     /** definition to get @accessible functions */
-//     def remove(query: conversions.Bson): IO[MongoException, Unit]
+    /** definition to get @accessible functions */
+    def insert(doc: Item): Task[InsertOneResult]
 
-//     /** definition to get @accessible functions */
-//     def removeAll: Task[Unit]
+    /** definition to get @accessible functions */
+    def insertMany(docs: Chunk[Item]): Task[InsertManyResult]
 
-//     /** definition to get @accessible functions */
-//     def update(
-//         query: conversions.Bson,
-//         update: conversions.Bson
-//     ): Task[UpdateResult]
-//   }
+    /** definition to get @accessible functions */
+    def remove(filter: Filter): Task[DeleteResult]
 
-//   case class Live(
-//       mongo: Mongo.Service,
-//       databaseName: String
-//   ) extends MongoRepoLive[Item](mongo)
-//       with Service {
+    /** definition to get @accessible functions */
+    def removeAll: Task[DeleteResult]
 
-//     /** Converts a MongoDoc into a bson Document.
-//       *
-//       * @param d the MongoDoc (meaning the model).
-//       * @return the Bson Document.
-//       */
-//     def docToBson(d: Item): Either[Throwable, Document] =
-//       Try(Document(d.asJson.toString)).toEither
+    /** definition to get @accessible functions */
+    def update(query: Filter, update: Update): Task[UpdateResult]
+  }
 
-//     /** Converts a bson Document into a MongoDoc.
-//       *
-//       * @param d the Bson Document.
-//       * @return the MongoDoc (meaning the model).
-//       */
-//     def bsonToDoc(d: Document): Either[Throwable, Item] =
-//       parse(d.toJson()).flatMap(_.as[Item])
+  case class Live(
+      mongo: Mongo.Service,
+      databaseName: String
+  ) extends MongoRepoLive[Item](mongo)
+      with Service
 
-//   }
-
-//   def layer(db: String): URLayer[Mongo, ItemsRepo] =
-//     ZLayer.fromService[Mongo.Service, Service](Live(_, db))
-// }
+  def layer(db: String): URLayer[Mongo, ItemsRepo] =
+    ZLayer.fromService[Mongo.Service, Service](Live(_, db))
+}

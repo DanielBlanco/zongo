@@ -12,3 +12,4 @@ project/sbt-ui.sbt
 project/metals.sbt
 tmp
 /src/test/resources/**/*tmp*
+tmuxp.yaml

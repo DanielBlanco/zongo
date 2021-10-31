@@ -1,9 +1,8 @@
 package zongo
 
-// import mongo4cats.bson._
-
 import zio.Has
+import zio.json._
 
 package object support {
-  // type ItemsRepo = Has[ItemsRepo.Service]
+  type ItemsRepo = Has[ItemsRepo.Service]
 }

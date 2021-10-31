@@ -19,6 +19,15 @@ trait MongoIdType {
     def zmake[ID](id: ID): IO[String, MongoId] =
       znewId(id).map(wrap)
 
+    def toJsonMap(id: MongoId): Map[String, String]                  =
+      Map("$oid" -> id.toString())
+
+    def fromJsonMap(m: Map[String, String]): Either[String, MongoId] =
+      m.get("$oid") match {
+        case None      => Left("Not an ObjectId value")
+        case Some(oid) => MongoId.make(oid)
+      }
+
     /** This way models can just do <Model>.newId and encapsulate the Id
       *  generation code that is specific to Mongo.
       */

@@ -8,6 +8,7 @@ object Dependencies {
     val zio              = "1.0.12"
     val zioCats          = "3.1.1.0"
     val zioConfig        = "1.0.6"
+    val zioJson          = "0.1.5"
     val zioLogging       = "0.5.8"
     val zioMagic         = "0.3.6"
     val zioPrelude       = "1.0.0-RC6"
@@ -57,6 +58,7 @@ object Dependencies {
       "dev.zio"              %% "zio-config-typesafe"         % V.zioConfig,
       "dev.zio"              %% "zio-logging"                 % V.zioLogging,
       "dev.zio"              %% "zio-logging-slf4j"           % V.zioLogging,
+      "dev.zio"              %% "zio-json"                    % V.zioJson,
       "dev.zio"              %% "zio-macros"                  % V.zio,
       "dev.zio"              %% "zio-prelude"                 % V.zioPrelude,
       "io.github.kitlangton" %% "zio-magic"                   % V.zioMagic
