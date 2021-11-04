@@ -1,83 +1,98 @@
 package zongo
 
+import com.mongodb.MongoException
 import com.mongodb.client.result._
+import org.bson.conversions.Bson
+import mongo4cats.bson._
+import mongo4cats.client._
+import mongo4cats.database._
+import mongo4cats.codecs._
 import mongo4cats.collection.operations._
+import scala.reflect.ClassTag
 import zio._
-import zio.interop.catz._
 import zio.stream._
 
-/** Helper service to facilitate the creation of Mongo repositories. */
-object MongoRepo {
+/** Helper class to facilitate the creation of Mongo repositories. */
+case class MongoRepo[D <: MongoDoc: ClassTag](
+    mongo: Mongo.Service,
+    databaseName: String,
+    collectionName: String
+)(implicit cp: MongoCodecProvider[D]) {
 
-  trait Service[D <: MongoDoc] {
+  /** @see MongoRepo.clearCollection */
+  def clearCollection: Task[DeleteResult] =
+    _coll_ >>= (c => mongo.clearCollection(c))
 
-    /** The mongo collection. */
-    val databaseName: String
+  /** @see MongoRepo.count */
+  def count: Task[Long] =
+    _coll_ >>= (_.count)
 
-    /** The mongo collection. */
-    val collectionName: String
+  /** @see MongoRepo.count */
+  def count(filter: Filter): Task[Long] =
+    _coll_ >>= (_.count(filter))
 
-    /** Clears the data from this collection. */
-    def clearCollection: Task[DeleteResult]
+  /** @see MongoRepo.finder */
+  def finder: Task[FindQueryBuilder[D]] =
+    _coll_.map(_.find)
 
-    /** Count all the documents in this collection.
-      *
-      * @return a Task containing the number (Long) of documents found.
-      */
-    def count: Task[Long]
+  /** Returns a query builder to find documents matching some criteria. */
+  def findChunks: Task[Chunk[D]] =
+    finder.flatMap(_.chunks)
 
-    /** Count all the documents in this collection.
-      *
-      * @param query the bson document to filter by.
-      * @return a Task containing the number (Long) of documents found.
-      */
-    def count(filter: Filter): Task[Long]
+  /** Returns a query builder to find documents matching some criteria. */
+  def findChunks(filter: Filter): Task[Chunk[D]] =
+    finder.flatMap(_.filter(filter).chunks)
 
-    /** Returns a query builder to find documents matching some criteria. */
-    def find: Task[FindQueryBuilder[D]]
+  /** Returns a query builder to find documents matching some criteria. */
+  def findFirst: Task[Option[D]] =
+    finder.flatMap(_.first)
 
-    /** Inserts the provided document.
-      *
-      * @param doc the document to insert.
-      * @return
-      */
-    def insert(doc: D): Task[InsertOneResult]
+  /** Returns a query builder to find documents matching some criteria. */
+  def findFirst(filter: Filter): Task[Option[D]] =
+    finder.flatMap(_.filter(filter).first)
 
-    /** Inserts a chunk of documents. The preferred way to perform bulk inserts
-      *  is to use the BulkWrite API.
-      *
-      *  However, when talking with a server &lt; 2.6, using this method will be
-      *  faster due to constraints in the bulk API related to error handling.
-      *
-      * @param docs the documents to insert
-      * @return a Task[InsertManyResult]
-      */
-    def insertMany(docs: Chunk[D]): Task[InsertManyResult]
+  /** @see MongoRepo.insert */
+  def insert(doc: D): Task[InsertOneResult] =
+    _coll_ >>= (_.insertOne(doc))
 
-    /** Deletes the documents that match the provided query.
-      *
-      * @param query to filter by.
-      * @return the DeleteResult.
-      */
-    def remove(filter: Filter): Task[DeleteResult]
+  /** @see MongoRepo.insertMany */
+  def insertMany(docs: Chunk[D]): Task[InsertManyResult] =
+    _coll_ >>= (_.insertMany(docs.toSeq))
 
-    /** Alias for clearCollection */
-    def removeAll = clearCollection
+  /** @see MongoRepo.remove */
+  def remove(id: MongoId): Task[DeleteResult] =
+    remove(Filter.idEq(id))
 
-    /** Updates records in database.
-      *
-      * @example
-      * {{{
-      *   UserRepo.update(
-      *     Filters.eq("name", "Liz"),
-      *     Updates.set("name", "Lizzy")
-      *   )
-      * }}}
-      *
-      * @param query How to find the records to update (selector).
-      * @param update The bson values to update (update).
-      * @return the update result
-      */
-    def update(filter: Filter, update: Update): Task[UpdateResult]
-  }
+  /** @see MongoRepo.remove */
+  def remove(filter: Filter): Task[DeleteResult] =
+    _coll_ >>= (_.deleteMany(filter))
+
+  /** @see MongoRepo.update */
+  def update(doc: D): Task[UpdateResult] =
+    for {
+      c      <- _coll_
+      filter  = (id: ObjectId) => Document("_id" -> id)
+      update  = Document("$set", doc)
+      result <- doc._id match {
+                  case None     => idNotFound
+                  case Some(id) => c.updateOne(filter(id), update)
+                }
+    } yield result
+
+  /** @see MongoRepo.update */
+  def update(
+      query: Filter,
+      update: Update
+  ): Task[UpdateResult] =
+    _coll_ >>= (_.updateMany(query, update))
+
+  protected def _db_ =
+    mongo.getDatabase(databaseName)
+
+  protected def _coll_ =
+    _db_ >>= (_.getCollectionWithCodec[D](collectionName))
+
+  protected def idNotFound =
+    Task.fail(new MongoException("Document does not have an id"))
+
 }

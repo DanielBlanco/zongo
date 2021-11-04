@@ -1,5 +1,6 @@
 package zongo.support
 
+import com.mongodb.MongoException
 import com.mongodb.client.result._
 import java.time.{Instant, LocalDate}
 import mongo4cats.collection.operations._
@@ -9,7 +10,6 @@ import zio.macros._
 import zio.stream._
 import zongo._
 import zongo.json._
-import zongo.internal.MongoRepoLive
 
 case class Item(
     _id: Option[MongoId],
@@ -24,44 +24,87 @@ object Item {
 
 @accessible
 object ItemsRepo {
-  trait Service extends MongoRepo.Service[Item] {
+  trait Service {
 
-    override val collectionName = "items"
-
-    /** definition to get @accessible functions */
     def clearCollection: Task[DeleteResult]
 
-    /** definition to get @accessible functions */
     def count: Task[Long]
 
-    /** definition to get @accessible functions */
     def count(filter: Filter): Task[Long]
 
-    /** definition to get @accessible functions */
-    def find: Task[FindQueryBuilder[Item]]
+    def finder: Task[FindQueryBuilder[Item]]
 
-    /** definition to get @accessible functions */
-    def insert(doc: Item): Task[InsertOneResult]
+    def findChunks: Task[Chunk[Item]]
 
-    /** definition to get @accessible functions */
+    def findChunks(filter: Filter): Task[Chunk[Item]]
+
+    def findFirst: Task[Option[Item]]
+
+    def findFirst(filter: Filter): Task[Option[Item]]
+
+    def insert(doc: Item): Task[Item]
+
     def insertMany(docs: Chunk[Item]): Task[InsertManyResult]
 
-    /** definition to get @accessible functions */
+    def remove(id: MongoId): Task[DeleteResult]
+
     def remove(filter: Filter): Task[DeleteResult]
 
-    /** definition to get @accessible functions */
-    def removeAll: Task[DeleteResult]
+    def removeAll: Task[DeleteResult] = clearCollection
 
-    /** definition to get @accessible functions */
+    def update(doc: Item): Task[UpdateResult]
+
     def update(query: Filter, update: Update): Task[UpdateResult]
   }
 
-  case class Live(
-      mongo: Mongo.Service,
-      databaseName: String
-  ) extends MongoRepoLive[Item](mongo)
-      with Service
+  case class Live(repo: MongoRepo[Item]) extends Service {
+
+    def clearCollection: Task[DeleteResult] = repo.clearCollection
+
+    def count: Task[Long] = repo.count
+
+    def count(filter: Filter): Task[Long] = repo.count(filter)
+
+    def finder: Task[FindQueryBuilder[Item]] = repo.finder
+
+    def findChunks: Task[Chunk[Item]] = repo.findChunks
+
+    def findChunks(filter: Filter): Task[Chunk[Item]] = repo.findChunks(filter)
+
+    def findFirst: Task[Option[Item]] = repo.findFirst
+
+    def findFirst(filter: Filter): Task[Option[Item]] = repo.findFirst(filter)
+
+    def insert(doc: Item): Task[Item] =
+      for {
+        _       <- repo.insert(doc)
+        opt     <- doc._id match {
+                     case None      => ZIO.none
+                     case Some(_id) => repo.findFirst(Filter.idEq(_id))
+                   }
+        updated <- ZIO
+                     .fromOption(opt)
+                     .mapError(_ => new MongoException("Inserted item not found"))
+      } yield updated
+
+    def insertMany(docs: Chunk[Item]): Task[InsertManyResult] =
+      repo.insertMany(docs)
+
+    def remove(id: MongoId): Task[DeleteResult] =
+      repo.remove(id)
+
+    def remove(filter: Filter): Task[DeleteResult] =
+      repo.remove(filter)
+
+    def update(doc: Item): Task[UpdateResult] =
+      repo.update(doc)
+
+    def update(query: Filter, update: Update): Task[UpdateResult] =
+      repo.update(query, update)
+  }
 
   def layer(db: String): URLayer[Mongo, ItemsRepo] =
-    ZLayer.fromService[Mongo.Service, Service](Live(_, db))
+    ZLayer.fromService[Mongo.Service, Service] { mongo =>
+      Live(MongoRepo[Item](mongo, db, "items"))
+    }
 }

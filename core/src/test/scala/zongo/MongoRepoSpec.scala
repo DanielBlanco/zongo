@@ -1,7 +1,7 @@
 package zongo
 
 import mongo4cats.collection.operations._
-import zio.{Chunk, RIO, Has, URLayer, ZLayer}
+import zio.{Chunk, RIO, Has, URLayer, ZLayer, ZIO}
 import zio.duration._
 import zio.macros._
 import zio.test._
@@ -9,7 +9,6 @@ import zio.test.Assertion._
 import zio.test.TestAspect._
 import zio.test.environment._
 import zongo.support._
-import zongo.internal.MongoRepoLive
 
 object MongoRepoSpec extends BaseSpec {
 
@@ -20,23 +19,21 @@ object MongoRepoSpec extends BaseSpec {
   def tests = Chunk(
     testM("find works") {
       for {
-        _      <- ItemsRepo.removeAll
-        _      <- ItemsRepo.insertMany(bulkInsertData)
-        finder <- ItemsRepo.find
-        items  <- finder.filter(inName("Luis", "John")).all
-        names   = items.map(_.name)
+        _     <- ItemsRepo.removeAll
+        _     <- ItemsRepo.insertMany(bulkInsertData)
+        items <- ItemsRepo.findChunks(inName("Luis", "John"))
+        names  = items.map(_.name)
       } yield assert(items.size)(equalTo(1)) &&
         assert(names)(equalTo(Chunk("John")))
     },
     testM("insert works") {
       for {
-        _      <- ItemsRepo.removeAll
-        id     <- MongoId.zmake("607ebd5d1c8f40252380ea44")
-        item    = Item(Some(id), "Lorelai")
-        _      <- ItemsRepo.insert(item)
-        count  <- ItemsRepo.count
-        finder <- ItemsRepo.find
-        found  <- finder.filter(Filter.idEq(id)).first
+        _     <- ItemsRepo.removeAll
+        id    <- MongoId.zmake("607ebd5d1c8f40252380ea44")
+        item   = Item(Some(id), "Lorelai")
+        _     <- ItemsRepo.insert(item)
+        count <- ItemsRepo.count
+        found <- ItemsRepo.findFirst(Filter.idEq(id))
       } yield assert(count)(equalTo(1L)) &&
         assert(found.map(_.name))(isSome(equalTo("Lorelai")))
     },
@@ -60,6 +57,20 @@ object MongoRepoSpec extends BaseSpec {
       } yield assert(countA)(equalTo(1L)) &&
         assert(countB)(equalTo(0L)) &&
         assert(countC)(equalTo(1L))
+    },
+    testM("update document works") {
+      for {
+        _      <- ItemsRepo.removeAll
+        _      <- ItemsRepo.insertMany(bulkInsertData)
+        finder <- ItemsRepo.finder
+        docOpt <- finder.filter(byName("Daniel")).first
+        doc    <- ZIO.fromOption(docOpt)
+        doc2    = doc.copy(name = "Daniela")
+        _      <- ItemsRepo.update(doc2)
+        countA <- ItemsRepo.count(byName("Daniela"))
+        countB <- ItemsRepo.count(byName("Daniel"))
+      } yield assert(countA)(equalTo(1L)) &&
+        assert(countB)(equalTo(0L))
     }
   )
 
