@@ -4,6 +4,7 @@ import mongo4cats.bson._
 import mongo4cats.codecs.MongoCodecProvider
 import scala.util.Try
 import zio.json._
+import zongo.MongoId
 
 trait JsonCodecs {
 

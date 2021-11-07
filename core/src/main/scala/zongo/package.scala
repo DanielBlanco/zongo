@@ -8,10 +8,14 @@ import zio.stream._
 import zio.stream.interop.fs2z._
 import zio.interop.catz._
 import zio.prelude._
-import zongo.internal._
+import zio.test.Assertion.{hasSizeString, isLessThan}
 
-package object zongo extends MongoIdType with MongoUriType {
+package object zongo {
   type Mongo = Has[Mongo.Service]
+
+  type MongoId = MongoId.Type
+
+  type MongoUri = MongoUri.Type
 
   type MongoDatabase = CatsMongoDatabase[Task]
 
@@ -20,6 +24,8 @@ package object zongo extends MongoIdType with MongoUriType {
   type MongoCollection[A] = CatsMongoCollection[Task, A]
 
   type FindQueryBuilder[A] = CatsFindQueryBuilder[Task, A]
+
+  private[zongo] def nonEmpty = hasSizeString(isGreaterThan(0))
 
   implicit class FindQueryBuilderOps[A](a: FindQueryBuilder[A]) {
 

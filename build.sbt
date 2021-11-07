@@ -24,7 +24,8 @@ lazy val commonSettings = Seq(
     "UTF-8",
     "-deprecation",
     "-Xfatal-warnings",
-    "-Ymacro-annotations"
+    "-Ymacro-annotations",
+    "-Xsource:3"
   ),
   Compile / doc / scalacOptions ++= Seq(
     "-no-link-warnings" // Suppresses problems with Scaladoc links

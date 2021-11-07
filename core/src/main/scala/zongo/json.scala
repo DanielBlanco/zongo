@@ -17,7 +17,7 @@ import zio.Has
 import zio.json._
 
 /** Provides some Encoders/Decoders for zio-json */
-package object json extends JsonCodecs {
+object json extends JsonCodecs {
 
   final case class MongoJsonParsingException(jsonString: String, message: String)
       extends MongoClientException(message)

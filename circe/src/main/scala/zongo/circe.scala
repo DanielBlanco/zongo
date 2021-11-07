@@ -13,5 +13,4 @@ object circe {
 
   implicit val decodeMongoId: Decoder[MongoId] =
     decodeObjectId.map(MongoId.wrap)
-
 }
