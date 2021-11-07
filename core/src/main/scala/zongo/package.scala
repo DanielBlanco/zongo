@@ -8,7 +8,6 @@ import zio.stream.*
 import zio.stream.interop.fs2z.*
 import zio.interop.catz.*
 import zio.prelude.*
-import zio.test.Assertion.{hasSizeString, isLessThan}
 
 package object zongo {
   type Mongo = Has[Mongo.Service]
@@ -24,8 +23,6 @@ package object zongo {
   type MongoCollection[A] = CatsMongoCollection[Task, A]
 
   type FindQueryBuilder[A] = CatsFindQueryBuilder[Task, A]
-
-  private[zongo] def nonEmpty = hasSizeString(isGreaterThan(0))
 
   implicit class FindQueryBuilderOps[A](a: FindQueryBuilder[A]) {
 

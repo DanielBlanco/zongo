@@ -9,8 +9,8 @@ object circe {
   import mongo4cats.circe.*
 
   implicit val encodeMongoId: Encoder[MongoId] =
-    encodeObjectId.contramap[MongoId](MongoId.unwrap)
+    encodeObjectId.contramap[MongoId](mid => MongoId.unwrap(mid))
 
   implicit val decodeMongoId: Decoder[MongoId] =
-    decodeObjectId.map(MongoId.wrap)
+    decodeObjectId.map(oid => MongoId(oid))
 }

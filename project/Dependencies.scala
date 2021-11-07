@@ -11,7 +11,7 @@ object Dependencies {
     val zioJson          = "0.1.5"
     val zioLogging       = "0.5.8"
     val zioMagic         = "0.3.6"
-    val zioPrelude       = "1.0.0-RC6"
+    val zioPrelude       = "1.0.0-RC7"
     val zioReactStreams  = "1.3.4"
   }
 
