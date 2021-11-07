@@ -1,16 +1,16 @@
 package zongo
 
 import com.mongodb.MongoException
-import com.mongodb.client.result._
+import com.mongodb.client.result.*
 import org.bson.conversions.Bson
-import mongo4cats.bson._
-import mongo4cats.client._
-import mongo4cats.database._
-import mongo4cats.codecs._
-import mongo4cats.collection.operations._
+import mongo4cats.bson.*
+import mongo4cats.client.*
+import mongo4cats.database.*
+import mongo4cats.codecs.*
+import mongo4cats.collection.operations.*
 import scala.reflect.ClassTag
-import zio._
-import zio.stream._
+import zio.*
+import zio.stream.*
 
 /** Helper class to facilitate the creation of Mongo repositories. */
 case class MongoRepo[D <: MongoDoc: ClassTag](

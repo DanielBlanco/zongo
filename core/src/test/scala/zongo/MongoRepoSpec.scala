@@ -1,14 +1,14 @@
 package zongo
 
-import mongo4cats.collection.operations._
+import mongo4cats.collection.operations.*
 import zio.{Chunk, RIO, Has, URLayer, ZLayer, ZIO}
-import zio.duration._
-import zio.macros._
-import zio.test._
-import zio.test.Assertion._
-import zio.test.TestAspect._
-import zio.test.environment._
-import zongo.support._
+import zio.duration.*
+import zio.macros.*
+import zio.test.*
+import zio.test.Assertion.*
+import zio.test.TestAspect.*
+import zio.test.environment.*
+import zongo.support.*
 
 object MongoRepoSpec extends BaseSpec {
 

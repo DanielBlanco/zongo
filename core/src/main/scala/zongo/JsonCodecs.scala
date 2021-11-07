@@ -1,9 +1,9 @@
 package zongo
 
-import mongo4cats.bson._
+import mongo4cats.bson.*
 import mongo4cats.codecs.MongoCodecProvider
 import scala.util.Try
-import zio.json._
+import zio.json.*
 import zongo.MongoId
 
 trait JsonCodecs {

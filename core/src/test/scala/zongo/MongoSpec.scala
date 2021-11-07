@@ -1,13 +1,13 @@
 package zongo
 
-import mongo4cats.bson._
-import support._
+import mongo4cats.bson.*
+import support.*
 import zio.{Chunk, ZIO}
-import zio.duration._
-import zio.test._
-import zio.test.Assertion._
-import zio.test.TestAspect._
-import zio.test.environment._
+import zio.duration.*
+import zio.test.*
+import zio.test.Assertion.*
+import zio.test.TestAspect.*
+import zio.test.environment.*
 
 object MongoSpec extends BaseSpec {
 

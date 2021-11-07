@@ -3,17 +3,17 @@ package zongo.internal
 import com.mongodb.ReadPreference
 import java.io.Closeable
 import org.bson.conversions.Bson
-import mongo4cats.bson._
+import mongo4cats.bson.*
 import mongo4cats.codecs.CodecRegistry
 import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
-import zio._
-import zio.prelude._
-import zio.stream._
-import zio.interop.catz._
-import zio.interop.catz.implicits._
-import zio.interop.reactivestreams._
-import zio.stream.interop.fs2z._
+import zio.*
+import zio.prelude.*
+import zio.stream.*
+import zio.interop.catz.*
+import zio.interop.catz.implicits.*
+import zio.interop.reactivestreams.*
+import zio.stream.interop.fs2z.*
 import zongo.{Mongo, MongoClient, MongoDatabase, MongoCollection}
 import com.mongodb.client.result.DeleteResult
 

@@ -3,15 +3,15 @@ package zongo
 import com.mongodb.ReadPreference
 import com.mongodb.client.result.DeleteResult
 import org.bson.conversions.Bson
-import mongo4cats.bson._
+import mongo4cats.bson.*
 import mongo4cats.codecs.CodecRegistry
 import scala.util.{Failure, Success, Try}
 import scala.reflect.ClassTag
-import zio._
-import zio.prelude._
-import zio.interop.reactivestreams._
+import zio.*
+import zio.prelude.*
+import zio.interop.reactivestreams.*
 import zio.macros.accessible
-import zio.stream._
+import zio.stream.*
 import zongo.internal.MongoLive
 
 @accessible

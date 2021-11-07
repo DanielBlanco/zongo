@@ -1,7 +1,7 @@
 package zongo
 
-import zio._
-import zio.prelude._
+import zio.*
+import zio.prelude.*
 import zio.test.Assertion.{hasSizeString, isLessThan}
 
 /** Extends SubtypeSmart to override make and trim the string value.

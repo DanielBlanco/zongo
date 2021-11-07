@@ -1,7 +1,7 @@
 package zongo
 
 import com.mongodb.MongoClientException
-import mongo4cats.bson._
+import mongo4cats.bson.*
 import mongo4cats.codecs.MongoCodecProvider
 import org.bson.codecs.{
   Codec,
@@ -14,7 +14,7 @@ import org.bson.codecs.configuration.{CodecProvider, CodecRegistry}
 import org.bson.{BsonReader, BsonType, BsonWriter, Document}
 import scala.reflect.ClassTag
 import zio.Has
-import zio.json._
+import zio.json.*
 
 /** Provides some Encoders/Decoders for zio-json */
 object json extends JsonCodecs {

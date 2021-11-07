@@ -1,9 +1,9 @@
 package zongo
 
-import mongo4cats.bson._
+import mongo4cats.bson.*
 import scala.util.Try
-import zio._
-import zio.prelude._
+import zio.*
+import zio.prelude.*
 
 /** Mongo ID wrapper. */
 object MongoId extends Subtype[ObjectId] {

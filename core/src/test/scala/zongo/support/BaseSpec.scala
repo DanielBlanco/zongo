@@ -1,17 +1,17 @@
 package zongo.support
 
-import zio._
-import zio.config._
-import zio.config.syntax._
-import zio.config.ConfigDescriptor._
-import zio.config.typesafe._
-import zio.clock._
-import zio.duration._
-import zio.magic._
-import zio.test._
-import zio.test.Assertion._
-import zio.test.environment._
-import zongo._
+import zio.*
+import zio.config.*
+import zio.config.syntax.*
+import zio.config.ConfigDescriptor.*
+import zio.config.typesafe.*
+import zio.clock.*
+import zio.duration.*
+import zio.magic.*
+import zio.test.*
+import zio.test.Assertion.*
+import zio.test.environment.*
+import zongo.*
 
 trait BaseSpec extends DefaultRunnableSpec {
   override def aspects = List(TestAspect.timeout(60.seconds))

@@ -1,15 +1,15 @@
 package zongo.support
 
 import com.mongodb.MongoException
-import com.mongodb.client.result._
+import com.mongodb.client.result.*
 import java.time.{Instant, LocalDate}
-import mongo4cats.collection.operations._
-import zio._
-import zio.json._
-import zio.macros._
-import zio.stream._
-import zongo._
-import zongo.json._
+import mongo4cats.collection.operations.*
+import zio.*
+import zio.json.*
+import zio.macros.*
+import zio.stream.*
+import zongo.*
+import zongo.json.*
 
 case class Item(
     _id: Option[MongoId],

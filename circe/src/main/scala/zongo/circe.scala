@@ -1,12 +1,12 @@
 package zongo
 
-import io.circe._
-import io.circe.generic.semiauto._
-import io.circe.parser._
-import io.circe.syntax._
+import io.circe.*
+import io.circe.generic.semiauto.*
+import io.circe.parser.*
+import io.circe.syntax.*
 
 object circe {
-  import mongo4cats.circe._
+  import mongo4cats.circe.*
 
   implicit val encodeMongoId: Encoder[MongoId] =
     encodeObjectId.contramap[MongoId](MongoId.unwrap)
