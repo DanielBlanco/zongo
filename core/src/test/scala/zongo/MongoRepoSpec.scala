@@ -1,7 +1,10 @@
 package zongo
 
 import mongo4cats.collection.operations.*
+import com.mongodb.client.model.Filters
+import java.util.UUID
 import zio.{Chunk, RIO, Has, URLayer, ZLayer, ZIO}
+import zio.console.*
 import zio.duration.*
 import zio.macros.*
 import zio.test.*
@@ -17,6 +20,16 @@ object MongoRepoSpec extends BaseSpec {
       .provideCustomLayerShared(specLayer)
 
   def tests = Chunk(
+    testM("explain works") {
+      for {
+        _    <- ItemsRepo.removeAll
+        _    <- ItemsRepo.insertMany(bulkInsertData)
+        // query <- ItemsRepo.translate(Filter.eq("name", "Luis"))
+        // _     <- putStrLn(query)
+        expl <- ItemsRepo.explain(inName("Luis", "John"))
+        xpct  = "filter=Document{{name=Document{{$in=[John, Luis]}}}}"
+      } yield assert(expl.toString)(containsString(xpct))
+    },
     testM("find works") {
       for {
         _     <- ItemsRepo.removeAll
@@ -26,11 +39,28 @@ object MongoRepoSpec extends BaseSpec {
       } yield assert(items.size)(equalTo(1)) &&
         assert(names)(equalTo(Chunk("John")))
     },
+    testM("find by UUID works") {
+      for {
+        _       <- ItemsRepo.removeAll
+        _       <- ItemsRepo.insertMany(bulkInsertData)
+        uuid     = UUID.fromString(UUID1)
+        itemOpt <- ItemsRepo.findFirst(Filter.eq("uuid", UUID1))
+        query   <- ItemsRepo.translate(Filter.eq("uuid", UUID1))
+        _       <- putStrLn(query)
+      } yield assert(itemOpt.map(_.uuid))(isSome(equalTo(uuid)))
+    },
+    testM("findFirst works") {
+      for {
+        _       <- ItemsRepo.removeAll
+        _       <- ItemsRepo.insertMany(bulkInsertData)
+        luisOpt <- ItemsRepo.findFirst(byName("Daniel"))
+      } yield assert(luisOpt.map(_.name))(isSome(equalTo("Daniel")))
+    },
     testM("insert works") {
       for {
         _     <- ItemsRepo.removeAll
         id    <- MongoId.zmake("607ebd5d1c8f40252380ea44")
-        item   = Item(Some(id), "Lorelai")
+        item   = Item(Some(id), UUID.randomUUID, "Lorelai")
         _     <- ItemsRepo.insert(item)
         count <- ItemsRepo.count
         found <- ItemsRepo.findFirst(Filter.idEq(id))
@@ -75,14 +105,20 @@ object MongoRepoSpec extends BaseSpec {
   )
 
   def byName(name: String) =
-    inName(name)
+    Filter.eq("name", name)
 
   def inName(names: String*) =
     Filter.in("name", names)
 
+  val UUID1 = "c6ac38e9-1417-49bd-ab5b-a6081eb40d71"
+
   def bulkInsertData = Chunk(
-    Item(Some(MongoId.make), "Daniel"),
-    Item(Some(MongoId.make), "Jane"),
-    Item(Some(MongoId.make), "John")
+    Item(
+      Some(MongoId.make),
+      UUID.fromString(UUID1),
+      "Daniel"
+    ),
+    Item(Some(MongoId.make), UUID.randomUUID, "Jane"),
+    Item(Some(MongoId.make), UUID.randomUUID, "John")
   )
 }

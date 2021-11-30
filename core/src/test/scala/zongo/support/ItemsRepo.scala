@@ -3,7 +3,9 @@ package zongo.support
 import com.mongodb.MongoException
 import com.mongodb.client.result.*
 import java.time.{Instant, LocalDate}
+import java.util.UUID
 import mongo4cats.collection.operations.*
+import mongo4cats.bson.*
 import zio.*
 import zio.json.*
 import zio.macros.*
@@ -13,6 +15,7 @@ import zongo.json.*
 
 case class Item(
     _id: Option[MongoId],
+    uuid: UUID,
     name: String,
     createdAt: Instant = Instant.now(),
     updatedAt: LocalDate = LocalDate.now()
@@ -31,6 +34,8 @@ object ItemsRepo {
     def count: Task[Long]
 
     def count(filter: Filter): Task[Long]
+
+    def explain(filter: Filter): Task[Document]
 
     def finder: Task[FindQueryBuilder[Item]]
 
@@ -52,6 +57,8 @@ object ItemsRepo {
 
     def removeAll: Task[DeleteResult] = clearCollection
 
+    def translate(filter: Filter): Task[String]
+
     def update(doc: Item): Task[UpdateResult]
 
     def update(query: Filter, update: Update): Task[UpdateResult]
@@ -64,6 +71,10 @@ object ItemsRepo {
     def count: Task[Long] = repo.count
 
     def count(filter: Filter): Task[Long] = repo.count(filter)
+
+    def translate(filter: Filter): Task[String] = repo.translate(filter)
+
+    def explain(filter: Filter): Task[Document] = repo.explain(filter)
 
     def finder: Task[FindQueryBuilder[Item]] = repo.finder
 

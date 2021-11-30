@@ -2,6 +2,9 @@ package zongo
 
 import com.mongodb.ReadPreference
 import com.mongodb.client.result.DeleteResult
+import org.bson.{BsonDocument, UuidRepresentation}
+import org.bson.codecs.*
+import org.bson.codecs.configuration.CodecRegistries
 import org.bson.conversions.Bson
 import mongo4cats.bson.*
 import mongo4cats.codecs.CodecRegistry
@@ -225,6 +228,12 @@ object Mongo {
     MongoLive(uri).toLayer.orDie
 
   /** @note This will help us debug queries. */
-  // lazy val toBsonDocument: conversions.Bson => BsonDocument =
-  //   _.toBsonDocument(BsonDocument.getClass, DEFAULT_CODEC_REGISTRY)
+  lazy val bsonToBsonDocument: Bson => BsonDocument =
+    _.toBsonDocument(
+      classOf[BsonDocument],
+      CodecRegistries.fromRegistries(
+        CodecRegistries.fromCodecs(new UuidCodec(UuidRepresentation.STANDARD)),
+        Bson.DEFAULT_CODEC_REGISTRY
+      )
+    )
 }

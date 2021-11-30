@@ -3,6 +3,7 @@ import mongo4cats.client.{MongoClient => CatsMongoClient}
 import mongo4cats.collection.{MongoCollection => CatsMongoCollection}
 import mongo4cats.database.{MongoDatabase => CatsMongoDatabase}
 import mongo4cats.collection.queries.{FindQueryBuilder => CatsFindQueryBuilder}
+import mongo4cats.collection.operations.Filter
 import zio.*
 import zio.stream.*
 import zio.stream.interop.fs2z.*
@@ -31,5 +32,7 @@ package object zongo {
 
     def zstream[R](queueSize: Int = 16): ZStream[R, Throwable, A] =
       a.stream.toZStream(queueSize)
+
   }
+
 }

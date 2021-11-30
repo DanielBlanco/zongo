@@ -2,12 +2,14 @@ package zongo
 
 import com.mongodb.MongoException
 import com.mongodb.client.result.*
+import org.bson.BsonDocument
 import org.bson.conversions.Bson
 import mongo4cats.bson.*
 import mongo4cats.client.*
 import mongo4cats.database.*
 import mongo4cats.codecs.*
 import mongo4cats.collection.operations.*
+import mongo4cats.collection.operations.FilterExt._
 import scala.reflect.ClassTag
 import zio.*
 import zio.stream.*
@@ -30,6 +32,16 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
   /** @see MongoRepo.count */
   def count(filter: Filter): Task[Long] =
     _coll_ >>= (_.count(filter))
+
+  /** Explain the execution plan for this operation with the server's default
+    * verbosity level.
+    */
+  def explain(filter: Filter): Task[Document] =
+    finder.flatMap(_.filter(filter).explain)
+
+  /** Convert a filter into a string which can then be printed. */
+  def translate(filter: Filter): Task[String] =
+    Task(filter.translate)
 
   /** @see MongoRepo.finder */
   def finder: Task[FindQueryBuilder[D]] =

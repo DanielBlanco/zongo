@@ -5,7 +5,7 @@ import zio.prelude.*
 
 /** New MongoUri type. */
 object MongoUri extends Subtype[String] {
-  def assertion = assert {
+  override def assertion = assert {
     Assertion.hasLength(Assertion.greaterThan(0))
   }
 }
