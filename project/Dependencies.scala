@@ -6,13 +6,13 @@ object Dependencies {
     val mongo4cats       = "0.4.0"
     val circe            = "0.14.1"
     val zio              = "1.0.12"
-    val zioCats          = "3.1.1.0"
-    val zioConfig        = "1.0.6"
+    val zioCats          = "3.2.9.0"
+    val zioConfig        = "1.0.10"
     val zioJson          = "0.1.5"
-    val zioLogging       = "0.5.8"
-    val zioMagic         = "0.3.6"
-    val zioPrelude       = "1.0.0-RC7"
-    val zioReactStreams  = "1.3.4"
+    val zioLogging       = "0.5.14"
+    val zioMagic         = "0.3.11"
+    val zioPrelude       = "1.0.0-RC8"
+    val zioReactStreams  = "1.3.8"
   }
 
   object CompilerPlugins {
