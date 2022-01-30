@@ -72,6 +72,6 @@ object MongoLive {
   def apply(uri: String): Managed[Throwable, Mongo.Service] =
     connect(uri).map(client => new MongoLive(client))
 
-  private def connect(uri: String) =
+  private def connect(uri: String)                          =
     mongo4cats.client.MongoClient.fromConnectionString[Task](uri).toManagedZIO
 }

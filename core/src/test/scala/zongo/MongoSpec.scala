@@ -20,7 +20,7 @@ object MongoSpec extends BaseSpec {
   //   FindTests.tests ++
   //   UpdateTests.tests ++
   //   OtherTests.tests
-  def tests = List(
+  def tests           = List(
     testM("healthcheck") {
       for {
         db   <- Mongo.getDatabase(TEST_DB)

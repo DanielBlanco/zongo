@@ -98,10 +98,10 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
   ): Task[UpdateResult] =
     _coll_ >>= (_.updateMany(query, update))
 
-  protected def _db_ =
+  protected def _db_       =
     mongo.getDatabase(databaseName)
 
-  protected def _coll_ =
+  protected def _coll_     =
     _db_ >>= (_.getCollectionWithCodec[D](collectionName))
 
   protected def idNotFound =

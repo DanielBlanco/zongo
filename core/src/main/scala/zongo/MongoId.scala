@@ -16,7 +16,7 @@ object MongoId extends Subtype[ObjectId] {
   def zmake[ID](id: ID): IO[String, MongoId] =
     znewId(id).map(wrap)
 
-  def toJsonMap(id: MongoId): Map[String, String]                  =
+  def toJsonMap(id: MongoId): Map[String, String] =
     Map("$oid" -> id.toString())
 
   def fromJsonMap(m: Map[String, String]): Either[String, MongoId] =
@@ -42,9 +42,9 @@ object MongoId extends Subtype[ObjectId] {
       case _id           => Left(invalidId(_id))
     }
 
-  private def znewId[ID](id: ID): IO[String, ObjectId] =
+  private def znewId[ID](id: ID): IO[String, ObjectId]    =
     ZIO.fromEither(newId(id))
 
-  private def invalidId[ID](id: ID) =
+  private def invalidId[ID](id: ID)                       =
     "Invalid ID: %s".format(id)
 }

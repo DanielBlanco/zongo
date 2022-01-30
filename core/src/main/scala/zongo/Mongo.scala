@@ -109,7 +109,7 @@ object Mongo {
       */
     def createCollection(name: String)(
         db: MongoDatabase
-    ): Task[Unit]                             =
+    ): Task[Unit] =
       runCommand(Document("create" -> name))(db).map(_ => ())
 
     /** Create a chunk of mongo collections.
@@ -123,7 +123,7 @@ object Mongo {
       */
     def createCollections(names: Chunk[String])(
         db: MongoDatabase
-    ): Task[Unit]                             =
+    ): Task[Unit] =
       ZIO.foreachPar(names)(createCollection(_)(db)).map(_ => ())
 
     /** Removes ALL records from a mongo collection.

@@ -20,9 +20,9 @@ trait JsonCodecs {
       }
     }
 
-  implicit val encodeMongoId: JsonEncoder[MongoId] =
+  implicit val encodeMongoId: JsonEncoder[MongoId]   =
     JsonEncoder[ObjectId].contramap(MongoId.unwrap)
-  implicit val decodeMongoId: JsonDecoder[MongoId] =
+  implicit val decodeMongoId: JsonDecoder[MongoId]   =
     JsonDecoder[ObjectId].mapOrFail(MongoId.make(_))
 
 }

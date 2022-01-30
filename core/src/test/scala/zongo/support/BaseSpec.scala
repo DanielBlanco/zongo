@@ -26,7 +26,7 @@ trait BaseSpec extends DefaultRunnableSpec {
 
   object Config {
 
-    val mongoUriDesc: ConfigDescriptor[MongoUri] =
+    val mongoUriDesc: ConfigDescriptor[MongoUri]            =
       string.transformOrFailLeft { s =>
         MongoUri.make(s).toEither.leftMap(_.mkString(","))
       }(MongoUri.unwrap)
@@ -36,7 +36,7 @@ trait BaseSpec extends DefaultRunnableSpec {
         nested("uri")(mongoUriDesc)
       )(MongoConfig.apply, MongoConfig.unapply)
 
-    private val cfgDesc: ConfigDescriptor[SpecConfig] =
+    private val cfgDesc: ConfigDescriptor[SpecConfig]       =
       (
         nested("mongodb")(mongoCfgDesc)
       )(SpecConfig.apply, SpecConfig.unapply)
@@ -48,7 +48,7 @@ trait BaseSpec extends DefaultRunnableSpec {
 
   type SpecEnv = Has[SpecConfig] with Mongo with ItemsRepo
 
-  lazy val mongoLayer: RLayer[Has[SpecConfig], Mongo] =
+  lazy val mongoLayer: RLayer[Has[SpecConfig], Mongo]           =
     for {
       cfg   <- ZLayer.service[SpecConfig].map(_.get)
       mongo <- Mongo.live(cfg.mongo.uri)

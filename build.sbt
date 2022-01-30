@@ -1,9 +1,11 @@
-ThisBuild / scalaVersion     := "2.13.6"
-ThisBuild / version          := "0.1.0-SNAPSHOT"
-ThisBuild / organization     := "dev.dblancorojas"
-ThisBuild / organizationName := "Daniel Blanco Rojas"
+ThisBuild / scalaVersion           := "2.13.6"
+ThisBuild / version                := "0.1.0-SNAPSHOT"
+ThisBuild / organization           := "dev.dblancorojas"
+ThisBuild / organizationName       := "Daniel Blanco Rojas"
+ThisBuild / versionScheme          := Some("early-semver")
+ThisBuild / versionPolicyIntention := Compatibility.BinaryAndSourceCompatible
 
-lazy val noPublish = Seq(
+lazy val noPublish      = Seq(
   publish         := {},
   publishLocal    := {},
   publishArtifact := false,
@@ -34,7 +36,7 @@ lazy val commonSettings = Seq(
   testFrameworks                 := Seq(Dependencies.Testing.framework)
 )
 
-lazy val root = project
+lazy val root           = project
   .in(file("."))
   .settings(noPublish)
   .settings(name := "zongo")
@@ -43,7 +45,7 @@ lazy val root = project
     `zongo-circe`
   )
 
-lazy val `zongo-core` = project
+lazy val `zongo-core`   = project
   .in(file("core"))
   .settings(commonSettings)
   .settings(
@@ -53,7 +55,7 @@ lazy val `zongo-core` = project
     Test / fork              := true
   )
 
-lazy val `zongo-circe` = project
+lazy val `zongo-circe`  = project
   .in(file("circe"))
   .dependsOn(`zongo-core`)
   .settings(commonSettings)
