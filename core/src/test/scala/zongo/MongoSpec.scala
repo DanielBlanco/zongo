@@ -3,11 +3,9 @@ package zongo
 import mongo4cats.bson.*
 import support.*
 import zio.{Chunk, ZIO}
-import zio.duration.*
 import zio.test.*
 import zio.test.Assertion.*
 import zio.test.TestAspect.*
-import zio.test.environment.*
 
 object MongoSpec extends BaseSpec {
 
@@ -21,19 +19,19 @@ object MongoSpec extends BaseSpec {
   //   UpdateTests.tests ++
   //   OtherTests.tests
   def tests           = List(
-    testM("healthcheck") {
+    test("healthcheck") {
       for {
         db   <- Mongo.getDatabase(TEST_DB)
         rslt <- Mongo.healthcheck(db).either
       } yield assert(rslt)(isRight)
     } @@ timeout(TIMEOUT),
-    testM("ping") {
+    test("ping") {
       for {
         db   <- Mongo.getDatabase(TEST_DB)
         rslt <- Mongo.ping(db).either
       } yield assert(rslt)(isRight)
     } @@ timeout(TIMEOUT),
-    testM("findCollectionNames") {
+    test("findCollectionNames") {
       for {
         db   <- Mongo.getDatabase(TEST_DB)
         old  <- Mongo.getCollections(collNames)(db)

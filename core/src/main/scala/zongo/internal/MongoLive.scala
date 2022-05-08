@@ -14,12 +14,10 @@ import zio.interop.catz.*
 import zio.interop.catz.implicits.*
 import zio.interop.reactivestreams.*
 import zio.stream.interop.fs2z.*
-import zongo.{Mongo, MongoClient, MongoDatabase, MongoCollection}
+import zongo.{Mongo, MongoUri, MongoClient, MongoDatabase, MongoCollection}
 import com.mongodb.client.result.DeleteResult
 
-final case class MongoLive(
-    val client: MongoClient
-) extends Mongo.Service {
+final case class MongoLive(client: MongoClient) extends Mongo:
 
   /** @see Mongo.Service.database */
   def getDatabase(name: String): Task[MongoDatabase] =
@@ -66,12 +64,10 @@ final case class MongoLive(
   def dropCollection[A](c: MongoCollection[A]): Task[Unit] =
     c.drop
 
-}
-object MongoLive {
+object MongoLive:
 
-  def apply(uri: String): Managed[Throwable, Mongo.Service] =
-    connect(uri).map(client => new MongoLive(client))
+  def apply(uri: MongoUri): Managed[Throwable, Mongo] =
+    connect(uri).map(client => MongoLive(client))
 
-  private def connect(uri: String)                          =
+  private def connect(uri: String)                    =
     mongo4cats.client.MongoClient.fromConnectionString[Task](uri).toManagedZIO
-}
