@@ -13,7 +13,6 @@ import org.bson.codecs.{
 import org.bson.codecs.configuration.{CodecProvider, CodecRegistry}
 import org.bson.{BsonReader, BsonType, BsonWriter, Document}
 import scala.reflect.ClassTag
-import zio.Has
 import zio.json.*
 
 /** Provides some Encoders/Decoders for zio-json */
