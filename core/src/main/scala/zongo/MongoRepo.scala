@@ -23,15 +23,15 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
 
   /** @see MongoRepo.clearCollection */
   def clearCollection: Task[DeleteResult] =
-    _coll_ >>= (c => mongo.clearCollection(c))
+    getCollection >>= (c => mongo.clearCollection(c))
 
   /** @see MongoRepo.count */
   def count: Task[Long] =
-    _coll_ >>= (_.count)
+    getCollection >>= (_.count)
 
   /** @see MongoRepo.count */
   def count(filter: Filter): Task[Long] =
-    _coll_ >>= (_.count(filter))
+    getCollection >>= (_.count(filter))
 
   /** Explain the execution plan for this operation with the server's default
     * verbosity level.
@@ -45,7 +45,7 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
 
   /** @see MongoRepo.finder */
   def finder: Task[FindQueryBuilder[D]] =
-    _coll_.map(_.find)
+    getCollection.map(_.find)
 
   /** Returns a query builder to find documents matching some criteria. */
   def findChunks: Task[Chunk[D]] =
@@ -65,11 +65,11 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
 
   /** @see MongoRepo.insert */
   def insert(doc: D): Task[InsertOneResult] =
-    _coll_ >>= (_.insertOne(doc))
+    getCollection >>= (_.insertOne(doc))
 
   /** @see MongoRepo.insertMany */
   def insertMany(docs: Chunk[D]): Task[InsertManyResult] =
-    _coll_ >>= (_.insertMany(docs.toSeq))
+    getCollection >>= (_.insertMany(docs.toSeq))
 
   /** @see MongoRepo.remove */
   def remove(id: MongoId): Task[DeleteResult] =
@@ -77,12 +77,12 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
 
   /** @see MongoRepo.remove */
   def remove(filter: Filter): Task[DeleteResult] =
-    _coll_ >>= (_.deleteMany(filter))
+    getCollection >>= (_.deleteMany(filter))
 
   /** @see MongoRepo.update */
   def update(doc: D): Task[UpdateResult] =
     for {
-      c      <- _coll_
+      c      <- getCollection
       filter  = (id: ObjectId) => Document("_id" -> id)
       update  = Document("$set", doc)
       result <- doc._id match {
@@ -96,13 +96,13 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
       query: Filter,
       update: Update
   ): Task[UpdateResult] =
-    _coll_ >>= (_.updateMany(query, update))
+    getCollection >>= (_.updateMany(query, update))
 
-  protected def _db_       =
+  def getDatabase =
     mongo.getDatabase(databaseName)
 
-  protected def _coll_     =
-    _db_ >>= (_.getCollectionWithCodec[D](collectionName))
+  def getCollection        =
+    getDatabase >>= (_.getCollectionWithCodec[D](collectionName))
 
   protected def idNotFound =
     Task.fail(new MongoException("Document does not have an id"))

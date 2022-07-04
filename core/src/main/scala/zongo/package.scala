@@ -4,6 +4,7 @@ import mongo4cats.collection.{MongoCollection => CatsMongoCollection}
 import mongo4cats.database.{MongoDatabase => CatsMongoDatabase}
 import mongo4cats.collection.queries.{FindQueryBuilder => CatsFindQueryBuilder}
 import mongo4cats.collection.operations.Filter
+import mongo4cats.collection.operations.{Sort => CatsSort}
 import zio.*
 import zio.stream.*
 import zio.stream.interop.fs2z.*
@@ -22,6 +23,8 @@ package object zongo {
   type MongoClient = CatsMongoClient[Task]
 
   type MongoCollection[A] = CatsMongoCollection[Task, A]
+
+  type Sort = CatsSort
 
   type FindQueryBuilder[A] = CatsFindQueryBuilder[Task, A]
 
