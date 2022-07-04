@@ -1,4 +1,4 @@
-ThisBuild / scalaVersion           := "2.13.6"
+ThisBuild / scalaVersion           := "3.1.2"
 ThisBuild / organization           := "dev.dblancorojas"
 ThisBuild / organizationName       := "Daniel Blanco Rojas"
 ThisBuild / versionScheme          := Some("early-semver")
@@ -20,18 +20,17 @@ lazy val commonSettings = Seq(
   resolvers                      += "Apache public" at "https://repository.apache.org/content/groups/public/",
   scalafmtOnCompile              := true,
   Compile / scalacOptions       ++= Seq(
-    "-feature",
     "-encoding",
     "UTF-8",
-    "-deprecation",
     "-Xfatal-warnings",
-    "-Ymacro-annotations",
-    "-Xsource:3"
+    "-feature",
+    "-deprecation",
+    "-indent",
+    "-rewrite"
   ),
   Compile / doc / scalacOptions ++= Seq(
     "-no-link-warnings" // Suppresses problems with Scaladoc links
   ),
-  libraryDependencies           ++= Dependencies.CompilerPlugins.libs,
   testFrameworks                 := Seq(Dependencies.Testing.framework)
 )
 

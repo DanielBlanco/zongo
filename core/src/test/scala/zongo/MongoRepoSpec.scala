@@ -3,34 +3,29 @@ package zongo
 import mongo4cats.collection.operations.*
 import com.mongodb.client.model.Filters
 import java.util.UUID
-import zio.{Chunk, RIO, Has, URLayer, ZLayer, ZIO}
-import zio.console.*
-import zio.duration.*
-import zio.macros.*
+import zio.*
 import zio.test.*
 import zio.test.Assertion.*
 import zio.test.TestAspect.*
-import zio.test.environment.*
 import zongo.support.*
 
-object MongoRepoSpec extends BaseSpec {
+object MongoRepoSpec extends BaseSpec:
 
   def spec =
     (suite("RepoMongoSpec")(tests: _*) @@ sequential)
       .provideCustomLayerShared(specLayer)
 
   def tests = Chunk(
-    testM("explain works") {
+    test("explain works") {
       for {
         _    <- ItemsRepo.removeAll
         _    <- ItemsRepo.insertMany(bulkInsertData)
         // query <- ItemsRepo.translate(Filter.eq("name", "Luis"))
-        // _     <- putStrLn(query)
         expl <- ItemsRepo.explain(inName("Luis", "John"))
         xpct  = "filter=Document{{name=Document{{$in=[John, Luis]}}}}"
       } yield assert(expl.toString)(containsString(xpct))
     },
-    testM("find works") {
+    test("find works") {
       for {
         _     <- ItemsRepo.removeAll
         _     <- ItemsRepo.insertMany(bulkInsertData)
@@ -39,24 +34,23 @@ object MongoRepoSpec extends BaseSpec {
       } yield assert(items.size)(equalTo(1)) &&
         assert(names)(equalTo(Chunk("John")))
     },
-    testM("find by UUID works") {
+    test("find by UUID works") {
       for {
         _       <- ItemsRepo.removeAll
         _       <- ItemsRepo.insertMany(bulkInsertData)
         uuid     = UUID.fromString(UUID1)
         itemOpt <- ItemsRepo.findFirst(Filter.eq("uuid", UUID1))
         query   <- ItemsRepo.translate(Filter.eq("uuid", UUID1))
-        _       <- putStrLn(query)
       } yield assert(itemOpt.map(_.uuid))(isSome(equalTo(uuid)))
     },
-    testM("findFirst works") {
+    test("findFirst works") {
       for {
         _       <- ItemsRepo.removeAll
         _       <- ItemsRepo.insertMany(bulkInsertData)
         luisOpt <- ItemsRepo.findFirst(byName("Daniel"))
       } yield assert(luisOpt.map(_.name))(isSome(equalTo("Daniel")))
     },
-    testM("insert works") {
+    test("insert works") {
       for {
         _     <- ItemsRepo.removeAll
         id    <- MongoId.zmake("607ebd5d1c8f40252380ea44")
@@ -67,7 +61,7 @@ object MongoRepoSpec extends BaseSpec {
       } yield assert(count)(equalTo(1L)) &&
         assert(found.map(_.name))(isSome(equalTo("Lorelai")))
     },
-    testM("remove works") {
+    test("remove works") {
       for {
         _     <- ItemsRepo.removeAll
         _     <- ItemsRepo.insertMany(bulkInsertData)
@@ -75,7 +69,7 @@ object MongoRepoSpec extends BaseSpec {
         count <- ItemsRepo.count
       } yield assert(count)(equalTo(1L))
     },
-    testM("update works") {
+    test("update works") {
       for {
         _      <- ItemsRepo.removeAll
         _      <- ItemsRepo.insertMany(bulkInsertData)
@@ -88,7 +82,7 @@ object MongoRepoSpec extends BaseSpec {
         assert(countB)(equalTo(0L)) &&
         assert(countC)(equalTo(1L))
     },
-    testM("update document works") {
+    test("update document works") {
       for {
         _      <- ItemsRepo.removeAll
         _      <- ItemsRepo.insertMany(bulkInsertData)
@@ -121,4 +115,3 @@ object MongoRepoSpec extends BaseSpec {
     Item(Some(MongoId.make), UUID.randomUUID, "Jane"),
     Item(Some(MongoId.make), UUID.randomUUID, "John")
   )
-}

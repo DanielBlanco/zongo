@@ -13,11 +13,10 @@ import org.bson.codecs.{
 import org.bson.codecs.configuration.{CodecProvider, CodecRegistry}
 import org.bson.{BsonReader, BsonType, BsonWriter, Document}
 import scala.reflect.ClassTag
-import zio.Has
 import zio.json.*
 
 /** Provides some Encoders/Decoders for zio-json */
-object json extends JsonCodecs {
+object json extends JsonCodecs:
 
   final case class MongoJsonParsingException(jsonString: String, message: String)
       extends MongoClientException(message)
@@ -37,7 +36,7 @@ object json extends JsonCodecs {
   ): CodecProvider =
     new CodecProvider {
       override def get[Y](classY: Class[Y], registry: CodecRegistry): Codec[Y] =
-        if (classY == classT || classT.isAssignableFrom(classY)) {
+        if (classY == classT || classT.isAssignableFrom(classY))
           new Codec[Y] {
             private val documentCodec: Codec[Document] =
               new DocumentCodec(registry).asInstanceOf[Codec[Document]]
@@ -47,8 +46,8 @@ object json extends JsonCodecs {
                 writer: BsonWriter,
                 t: Y,
                 encoderContext: EncoderContext
-            ): Unit = {
-              enc.toJsonAST(t.asInstanceOf[T]) match {
+            ): Unit =
+              enc.toJsonAST(t.asInstanceOf[T]) match
                 case Right(json)      =>
                   val document = Document.parse(json.toString())
                   documentCodec.encode(writer, document, encoderContext)
@@ -58,8 +57,6 @@ object json extends JsonCodecs {
                     jsonString.replaceAll("\"", ""),
                     encoderContext
                   )
-              }
-            }
 
             override def getEncoderClass: Class[Y] = classY
 
@@ -67,7 +64,7 @@ object json extends JsonCodecs {
                 reader: BsonReader,
                 decoderContext: DecoderContext
             ): Y =
-              reader.getCurrentBsonType match {
+              reader.getCurrentBsonType match
                 case BsonType.DOCUMENT =>
                   val json = documentCodec.decode(reader, decoderContext).toJson()
                   json
@@ -84,11 +81,8 @@ object json extends JsonCodecs {
                       e => throw MongoJsonParsingException(string, e),
                       _.asInstanceOf[Y]
                     )
-              }
 
           }
-        } else {
+        else
           null // scalastyle:ignore
-        }
     }
-}

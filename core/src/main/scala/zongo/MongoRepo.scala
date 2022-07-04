@@ -16,22 +16,22 @@ import zio.stream.*
 
 /** Helper class to facilitate the creation of Mongo repositories. */
 case class MongoRepo[D <: MongoDoc: ClassTag](
-    mongo: Mongo.Service,
+    mongo: Mongo,
     databaseName: String,
     collectionName: String
-)(implicit cp: MongoCodecProvider[D]) {
+)(implicit cp: MongoCodecProvider[D]):
 
   /** @see MongoRepo.clearCollection */
   def clearCollection: Task[DeleteResult] =
-    getCollection >>= (c => mongo.clearCollection(c))
+    getCollection.flatMap(c => mongo.clearCollection(c))
 
   /** @see MongoRepo.count */
   def count: Task[Long] =
-    getCollection >>= (_.count)
+    getCollection.flatMap(_.count)
 
   /** @see MongoRepo.count */
   def count(filter: Filter): Task[Long] =
-    getCollection >>= (_.count(filter))
+    getCollection.flatMap(_.count(filter))
 
   /** Explain the execution plan for this operation with the server's default
     * verbosity level.
@@ -41,7 +41,7 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
 
   /** Convert a filter into a string which can then be printed. */
   def translate(filter: Filter): Task[String] =
-    Task(filter.translate)
+    ZIO.attempt(filter.translate)
 
   /** @see MongoRepo.finder */
   def finder: Task[FindQueryBuilder[D]] =
@@ -65,11 +65,11 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
 
   /** @see MongoRepo.insert */
   def insert(doc: D): Task[InsertOneResult] =
-    getCollection >>= (_.insertOne(doc))
+    getCollection.flatMap(_.insertOne(doc))
 
   /** @see MongoRepo.insertMany */
   def insertMany(docs: Chunk[D]): Task[InsertManyResult] =
-    getCollection >>= (_.insertMany(docs.toSeq))
+    getCollection.flatMap(_.insertMany(docs.toSeq))
 
   /** @see MongoRepo.remove */
   def remove(id: MongoId): Task[DeleteResult] =
@@ -77,7 +77,7 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
 
   /** @see MongoRepo.remove */
   def remove(filter: Filter): Task[DeleteResult] =
-    getCollection >>= (_.deleteMany(filter))
+    getCollection.flatMap(_.deleteMany(filter))
 
   /** @see MongoRepo.update */
   def update(doc: D): Task[UpdateResult] =
@@ -85,10 +85,9 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
       c      <- getCollection
       filter  = (id: ObjectId) => Document("_id" -> id)
       update  = Document("$set", doc)
-      result <- doc._id match {
+      result <- doc._id match
                   case None     => idNotFound
                   case Some(id) => c.updateOne(filter(id), update)
-                }
     } yield result
 
   /** @see MongoRepo.update */
@@ -96,15 +95,13 @@ case class MongoRepo[D <: MongoDoc: ClassTag](
       query: Filter,
       update: Update
   ): Task[UpdateResult] =
-    getCollection >>= (_.updateMany(query, update))
+    getCollection.flatMap(_.updateMany(query, update))
 
   def getDatabase =
     mongo.getDatabase(databaseName)
 
   def getCollection        =
-    getDatabase >>= (_.getCollectionWithCodec[D](collectionName))
+    getDatabase.flatMap(_.getCollectionWithCodec[D](collectionName))
 
   protected def idNotFound =
-    Task.fail(new MongoException("Document does not have an id"))
-
-}
+    ZIO.fail(new MongoException("Document does not have an id"))

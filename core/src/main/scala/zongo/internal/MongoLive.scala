@@ -19,7 +19,7 @@ import com.mongodb.client.result.DeleteResult
 
 final case class MongoLive(
     val client: MongoClient
-) extends Mongo.Service {
+) extends Mongo:
 
   /** @see Mongo.Service.database */
   def getDatabase(name: String): Task[MongoDatabase] =
@@ -66,12 +66,10 @@ final case class MongoLive(
   def dropCollection[A](c: MongoCollection[A]): Task[Unit] =
     c.drop
 
-}
-object MongoLive {
+object MongoLive:
 
-  def apply(uri: String): Managed[Throwable, Mongo.Service] =
+  def apply(uri: String): RIO[Scope, MongoLive] =
     connect(uri).map(client => new MongoLive(client))
 
-  private def connect(uri: String)                          =
-    mongo4cats.client.MongoClient.fromConnectionString[Task](uri).toManagedZIO
-}
+  private def connect(uri: String)              =
+    mongo4cats.client.MongoClient.fromConnectionString[Task](uri).toScopedZIO
