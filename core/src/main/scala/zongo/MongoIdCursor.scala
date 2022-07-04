@@ -3,7 +3,6 @@
 // import zio.*
 // import zio.prelude.*
 
-
 // /**
 //  * A cursor implementation that models an index/offset as an
 //  * opaque base64 cursor.

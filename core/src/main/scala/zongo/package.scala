@@ -11,12 +11,7 @@ import zio.stream.interop.fs2z.*
 import zio.interop.catz.*
 import zio.prelude.*
 
-package object zongo {
-  type Mongo = Has[Mongo.Service]
-
-  type MongoId = MongoId.Type
-
-  type MongoUri = MongoUri.Type
+package object zongo:
 
   type MongoDatabase = CatsMongoDatabase[Task]
 
@@ -28,14 +23,10 @@ package object zongo {
 
   type FindQueryBuilder[A] = CatsFindQueryBuilder[Task, A]
 
-  implicit class FindQueryBuilderOps[A](a: FindQueryBuilder[A]) {
+  implicit class FindQueryBuilderOps[A](a: FindQueryBuilder[A]):
 
     def chunks: Task[Chunk[A]] =
       a.all.map(Chunk.fromIterable)
 
     def zstream[R](queueSize: Int = 16): ZStream[R, Throwable, A] =
       a.stream.toZStream(queueSize)
-
-  }
-
-}

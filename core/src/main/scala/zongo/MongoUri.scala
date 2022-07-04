@@ -2,10 +2,12 @@ package zongo
 
 import zio.*
 import zio.prelude.*
+import zio.prelude.Assertion.*
 
 /** New MongoUri type. */
-object MongoUri extends Subtype[String] {
-  override def assertion = assert {
-    Assertion.hasLength(Assertion.greaterThan(0))
-  }
-}
+object MongoUri extends Subtype[String]:
+
+  override inline def assertion =
+    startsWith("mongodb")
+
+type MongoUri = MongoUri.Type
