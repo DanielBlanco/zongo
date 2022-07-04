@@ -215,6 +215,8 @@ trait Mongo:
 /** Defines accesor & helper methods */
 object Mongo:
 
+  type MongoIO[A] = RIO[Mongo, A]
+
   /** Constructs a layer from a MongoClient.
     *
     * @param uri
@@ -234,3 +236,70 @@ object Mongo:
         Bson.DEFAULT_CODEC_REGISTRY
       )
     )
+
+  def getDatabase(name: String): MongoIO[MongoDatabase] =
+    ZIO.serviceWithZIO(_.getDatabase(name))
+
+  def dropDatabase(db: MongoDatabase): MongoIO[Unit] =
+    ZIO.serviceWithZIO(_.dropDatabase(db))
+
+  def clearDatabase(db: MongoDatabase): MongoIO[Unit] =
+    ZIO.serviceWithZIO(_.clearDatabase(db))
+
+  def findCollectionNames(db: MongoDatabase): MongoIO[Chunk[String]] =
+    ZIO.serviceWithZIO(_.findCollectionNames(db))
+
+  def runCommand(command: Bson)(db: MongoDatabase): MongoIO[Document] =
+    ZIO.serviceWithZIO(_.runCommand(command)(db))
+
+  def runCommand(
+      command: Bson,
+      readPreference: ReadPreference
+  )(db: MongoDatabase): MongoIO[Document] =
+    ZIO.serviceWithZIO(_.runCommand(command, readPreference)(db))
+
+  def healthcheck(db: MongoDatabase): MongoIO[Unit] =
+    ZIO.serviceWithZIO(_.healthcheck(db))
+
+  def ping(db: MongoDatabase): MongoIO[String] =
+    ZIO.serviceWithZIO(_.ping(db))
+
+  def createCollection(name: String)(
+      db: MongoDatabase
+  ): MongoIO[Unit] =
+    ZIO.serviceWithZIO(_.createCollection(name)(db))
+
+  def createCollections(names: Chunk[String])(
+      db: MongoDatabase
+  ): MongoIO[Unit] =
+    ZIO.serviceWithZIO(_.createCollections(names)(db))
+
+  def clearCollection[A](c: MongoCollection[A]): MongoIO[DeleteResult] =
+    ZIO.serviceWithZIO(_.clearCollection(c))
+
+  def clearCollections[A](
+      cs: Chunk[MongoCollection[A]]
+  ): MongoIO[Chunk[DeleteResult]] =
+    ZIO.serviceWithZIO(_.clearCollections(cs))
+
+  def getCollection(
+      name: String
+  )(db: MongoDatabase): MongoIO[MongoCollection[Document]] =
+    ZIO.serviceWithZIO(_.getCollection(name)(db))
+
+  def getCollection[A: ClassTag](
+      name: String,
+      codecRegistry: CodecRegistry
+  )(db: MongoDatabase): MongoIO[MongoCollection[A]] =
+    ZIO.serviceWithZIO(_.getCollection(name, codecRegistry)(db))
+
+  def getCollections(
+      names: Chunk[String]
+  )(db: MongoDatabase): MongoIO[Chunk[MongoCollection[Document]]] =
+    ZIO.serviceWithZIO(_.getCollections(names)(db))
+
+  def dropCollection[A](c: MongoCollection[A]): MongoIO[Unit] =
+    ZIO.serviceWithZIO(_.dropCollection(c))
+
+  def dropCollections[A](cs: Chunk[MongoCollection[A]]): MongoIO[Unit] =
+    ZIO.serviceWithZIO(_.dropCollections(cs))

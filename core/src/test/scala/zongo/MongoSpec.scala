@@ -3,42 +3,36 @@ package zongo
 import mongo4cats.bson.*
 import support.*
 import zio.{Chunk, ZIO}
-import zio.duration.*
 import zio.test.*
 import zio.test.Assertion.*
 import zio.test.TestAspect.*
-import zio.test.environment.*
 
-object MongoSpec extends BaseSpec {
+object MongoSpec extends BaseSpec:
 
-  def spec = // @@ before(clearDB)
+  def spec =
     (suite("MongoSpec")(tests: _*) @@ sequential)
       .provideCustomLayerShared(specLayer)
 
-  // CountTests.tests ++
-  //   IndexesTests.tests ++
-  //   FindTests.tests ++
-  //   UpdateTests.tests ++
-  //   OtherTests.tests
-  def tests           = List(
-    testM("healthcheck") {
+  def tests           = Chunk(
+    test("healthcheck") {
       for {
         db   <- Mongo.getDatabase(TEST_DB)
         rslt <- Mongo.healthcheck(db).either
       } yield assert(rslt)(isRight)
     } @@ timeout(TIMEOUT),
-    testM("ping") {
+    test("ping") {
       for {
         db   <- Mongo.getDatabase(TEST_DB)
         rslt <- Mongo.ping(db).either
       } yield assert(rslt)(isRight)
     } @@ timeout(TIMEOUT),
-    testM("findCollectionNames") {
+    test("findCollectionNames") {
       for {
         db   <- Mongo.getDatabase(TEST_DB)
         old  <- Mongo.getCollections(collNames)(db)
         _    <- Mongo.dropCollections(old)
         _    <- Mongo.createCollections(collNames)(db)
+        _    <- ZIO.unit
         rslt <- Mongo.findCollectionNames(db)
       } yield assert(rslt)(hasSubset(collNames))
     } @@ timeout(TIMEOUT)
@@ -49,4 +43,3 @@ object MongoSpec extends BaseSpec {
   private def createCmd(name: String) = Document("create" -> name)
 
   private def dropCmd(name: String) = Document("drop" -> name)
-}
